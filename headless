@@ -1,0 +1,136 @@
+-- Script para remover perna esquerda e cabeça do personagem
+-- Visível para todos os jogadores no servidor
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- Função para remover perna esquerda e cabeça
+local function removePartsFromCharacter(character)
+    if not character then return end
+    
+    -- Aguardar o personagem carregar completamente
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    
+    wait(0.1) -- Pequena pausa para garantir que tudo carregou
+    
+    -- Remover cabeça
+    local head = character:FindFirstChild("Head")
+    if head then
+        head:Destroy()
+        print("Cabeça removida!")
+    end
+    
+    -- Remover perna esquerda (R6)
+    local leftLeg = character:FindFirstChild("Left Leg")
+    if leftLeg then
+        leftLeg:Destroy()
+        print("Perna esquerda removida (R6)!")
+    end
+    
+    -- Remover perna esquerda (R15) - partes superiores e inferiores
+    local leftUpperLeg = character:FindFirstChild("LeftUpperLeg")
+    local leftLowerLeg = character:FindFirstChild("LeftLowerLeg") 
+    local leftFoot = character:FindFirstChild("LeftFoot")
+    
+    if leftUpperLeg then
+        leftUpperLeg:Destroy()
+        print("Parte superior da perna esquerda removida (R15)!")
+    end
+    
+    if leftLowerLeg then
+        leftLowerLeg:Destroy()
+        print("Parte inferior da perna esquerda removida (R15)!")
+    end
+    
+    if leftFoot then
+        leftFoot:Destroy()
+        print("Pé esquerdo removido (R15)!")
+    end
+    
+    -- Remover acessórios da cabeça
+    for _, child in pairs(character:GetChildren()) do
+        if child:IsA("Accessory") then
+            local handle = child:FindFirstChild("Handle")
+            if handle then
+                -- Verificar se é acessório da cabeça
+                local attachment = handle:FindFirstChild("FaceFrontAttachment") or
+                                 handle:FindFirstChild("HatAttachment") or
+                                 handle:FindFirstChild("HairAttachment") or
+                                 handle:FindFirstChild("FaceCenterAttachment")
+                if attachment then
+                    child:Destroy()
+                    print("Acessório da cabeça removido: " .. child.Name)
+                end
+            end
+        end
+    end
+    
+    -- Configurações do humanoid para funcionar sem cabeça
+    if humanoid then
+        humanoid.RequiresNeck = false
+        humanoid.BreakJointsOnDeath = false
+        
+        -- Manter saúde para evitar morte instantânea
+        humanoid.MaxHealth = 100
+        humanoid.Health = 100
+    end
+    
+    print("Modificações aplicadas com sucesso!")
+end
+
+-- Aplicar quando o personagem spawnar
+player.CharacterAdded:Connect(function(character)
+    -- Aguardar tudo carregar
+    spawn(function()
+        removePartsFromCharacter(character)
+    end)
+end)
+
+-- Aplicar se o personagem já existir
+if player.Character then
+    spawn(function()
+        removePartsFromCharacter(player.Character)
+    end)
+end
+
+-- Função para aplicar novamente (caso necessário)
+local function reapplyModifications()
+    if player.Character then
+        removePartsFromCharacter(player.Character)
+    end
+end
+
+-- Detectar se as partes voltaram e remover novamente
+RunService.Heartbeat:Connect(function()
+    if player.Character then
+        local character = player.Character
+        
+        -- Verificar se a cabeça voltou
+        local head = character:FindFirstChild("Head")
+        if head then
+            head:Destroy()
+        end
+        
+        -- Verificar se a perna esquerda voltou (R6)
+        local leftLeg = character:FindFirstChild("Left Leg")
+        if leftLeg then
+            leftLeg:Destroy()
+        end
+        
+        -- Verificar se as partes da perna esquerda voltaram (R15)
+        local leftUpperLeg = character:FindFirstChild("LeftUpperLeg")
+        local leftLowerLeg = character:FindFirstChild("LeftLowerLeg")
+        local leftFoot = character:FindFirstChild("LeftFoot")
+        
+        if leftUpperLeg then leftUpperLeg:Destroy() end
+        if leftLowerLeg then leftLowerLeg:Destroy() end
+        if leftFoot then leftFoot:Destroy() end
+    end
+end)
+
+print("Script de remoção de partes carregado!")
+print("A cabeça e perna esquerda serão removidas automaticamente.")
+print("As modificações são visíveis para todos os jogadores no servidor.")
